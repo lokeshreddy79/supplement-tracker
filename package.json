@@ -1,0 +1,11 @@
+{
+  "name": "daily-dose-tracker",
+  "version": "1.0.0",
+  "description": "A local-first web app for tracking daily supplement intake.",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve . -l 5173",
+    "dev": "npx --yes live-server --port=5173"
+  },
+  "license": "MIT"
+}

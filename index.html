@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Daily Dose — Supplement Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EDE1;
+    --paper-raised:#FBF8F1;
+    --ink:#24312A;
+    --ink-soft:#5B6B60;
+    --amber:#B8763A;
+    --amber-dark:#8F5A28;
+    --sage:#7C9885;
+    --sage-dark:#5C7A67;
+    --gold:#C79A44;
+    --line:#D8CFBA;
+    --shadow: 0 1px 0 rgba(36,49,42,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(36,49,42,0.05) 1px, transparent 0);
+    background-size: 22px 22px;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding: 32px 20px 80px;
+  }
+  .wrap{ max-width: 720px; margin: 0 auto; }
+
+  /* Header — apothecary label */
+  header{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 28px 22px;
+    position: relative;
+    box-shadow: var(--shadow);
+  }
+  header::before{
+    content:"";
+    position:absolute; inset:6px;
+    border: 1px solid var(--amber);
+    opacity:0.35;
+    border-radius: 2px;
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--amber-dark);
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: 34px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .date-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    margin-top: 14px;
+  }
+  #today-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .streak-badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 5px 12px;
+    border-radius: 100px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .streak-badge .flame{ font-size: 13px; }
+
+  /* Progress gauge */
+  .gauge-row{
+    margin-top: 18px;
+  }
+  .gauge-track{
+    height: 10px;
+    background: rgba(36,49,42,0.08);
+    border-radius: 100px;
+    overflow:hidden;
+  }
+  .gauge-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--sage-dark), var(--sage));
+    border-radius:100px;
+    width:0%;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .gauge-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    display:flex; justify-content:space-between;
+  }
+
+  /* Section titles */
+  .section-title{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 34px 0 12px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .section-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+
+  /* Time-of-day groups */
+  .time-group{ margin-bottom: 6px; }
+  .time-group-label{
+    font-family:'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    margin: 18px 0 8px 2px;
+  }
+
+  /* Supplement card = label with tear-off capsule toggle */
+  .supp-card{
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 14px 14px 0;
+    margin-bottom: 8px;
+    display:flex;
+    align-items:stretch;
+    gap:0;
+    box-shadow: var(--shadow);
+    transition: opacity 0.3s;
+  }
+  .capsule-toggle{
+    width: 56px;
+    min-width:56px;
+    border-right: 1px dashed var(--line);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .capsule{
+    width: 26px; height: 14px;
+    border-radius: 100px;
+    border: 1.6px solid var(--amber-dark);
+    position:relative;
+    overflow:hidden;
+    background: transparent;
+    transition: transform 0.2s;
+  }
+  .capsule::before{
+    content:"";
+    position:absolute; left:0; top:0; bottom:0;
+    width:0%;
+    background: var(--sage-dark);
+    transition: width 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .supp-card.taken .capsule::before{ width:100%; }
+  .supp-card.taken .capsule{ border-color: var(--sage-dark); transform: scale(1.06); }
+  .supp-card.taken{ opacity: 0.55; }
+
+  .supp-info{
+    flex:1;
+    padding: 0 14px;
+    display:flex; flex-direction:column; justify-content:center; gap:2px;
+    min-width:0;
+  }
+  .supp-name{
+    font-family:'Fraunces', serif;
+    font-weight: 600;
+    font-size: 17px;
+  }
+  .supp-meta{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .supp-actions{
+    display:flex; align-items:center; padding-right:6px;
+  }
+  .icon-btn{
+    border:none; background:none; cursor:pointer;
+    color: var(--ink-soft);
+    font-size: 16px;
+    padding: 6px;
+    line-height:1;
+    border-radius:4px;
+  }
+  .icon-btn:hover{ background: rgba(36,49,42,0.06); color: var(--ink); }
+
+  .empty-state{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+    padding: 22px 4px;
+    text-align:center;
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    background: rgba(251,248,241,0.5);
+  }
+
+  /* Add button */
+  .add-bar{
+    margin-top: 22px;
+  }
+  .add-btn{
+    width:100%;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--paper);
+    border:none;
+    border-radius: 4px;
+    padding: 13px;
+    cursor:pointer;
+    transition: background 0.2s;
+  }
+  .add-btn:hover{ background: #17211B; }
+
+  /* History heatmap */
+  .heatmap{
+    display:grid;
+    grid-template-columns: repeat(14, 1fr);
+    gap: 5px;
+  }
+  .heat-cell{
+    aspect-ratio: 1;
+    border-radius: 3px;
+    background: rgba(36,49,42,0.07);
+    position:relative;
+  }
+  .heat-cell[data-level="1"]{ background: #E4D9BC; }
+  .heat-cell[data-level="2"]{ background: #CDBE8C; }
+  .heat-cell[data-level="3"]{ background: var(--gold); }
+  .heat-cell[data-level="4"]{ background: var(--sage-dark); }
+  .heat-cell.today{ box-shadow: 0 0 0 1.5px var(--ink); }
+  .heat-legend{
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px; color:var(--ink-soft);
+    margin-top:10px; justify-content:flex-end;
+  }
+  .heat-legend .heat-cell{ width:10px; height:10px; aspect-ratio:unset; }
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background: rgba(36,49,42,0.35);
+    display:none;
+    align-items:center; justify-content:center;
+    padding: 20px;
+    z-index: 50;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal{
+    background: var(--paper-raised);
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    padding: 26px;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y:auto;
+  }
+  .modal h2{
+    font-family:'Fraunces', serif;
+    font-size: 22px;
+    margin: 0 0 18px;
+  }
+  .field{ margin-bottom: 14px; }
+  .field label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field input, .field select{
+    width:100%;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 11px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus{
+    outline: 2px solid var(--sage);
+    outline-offset: 1px;
+  }
+  .modal-actions{
+    display:flex; gap:10px; margin-top: 20px;
+  }
+  .btn{
+    flex:1;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing:0.06em;
+    text-transform: uppercase;
+    padding: 11px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    cursor:pointer;
+  }
+  .btn.primary{
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .btn.danger{
+    background: transparent;
+    color: #A6472F;
+    border-color: #A6472F;
+  }
+
+  footer{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 36px;
+    opacity:0.7;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; }
+  }
+
+  @media (max-width: 480px){
+    h1{ font-size: 27px; }
+    .heatmap{ grid-template-columns: repeat(10, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Compounded Daily &middot; No. 01</div>
+    <h1>The Daily Dose</h1>
+    <div class="date-row">
+      <div id="today-date"></div>
+      <div class="streak-badge"><span class="flame">&#9679;</span><span id="streak-text">0 day streak</span></div>
+    </div>
+    <div class="gauge-row">
+      <div class="gauge-track"><div class="gauge-fill" id="gauge-fill"></div></div>
+      <div class="gauge-label"><span id="gauge-count">0 of 0 taken</span><span id="gauge-pct">0%</span></div>
+    </div>
+  </header>
+
+  <div class="section-title">Today's Shelf</div>
+  <div id="today-list"></div>
+
+  <div class="add-bar">
+    <button class="add-btn" id="open-add">+ Add a supplement</button>
+  </div>
+
+  <div class="section-title">Last 14 Days</div>
+  <div class="heatmap" id="heatmap"></div>
+  <div class="heat-legend">
+    <span>less</span>
+    <div class="heat-cell" data-level="0"></div>
+    <div class="heat-cell" data-level="1"></div>
+    <div class="heat-cell" data-level="2"></div>
+    <div class="heat-cell" data-level="3"></div>
+    <div class="heat-cell" data-level="4"></div>
+    <span>full</span>
+  </div>
+
+  <footer>Stored privately in this browser only.</footer>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h2 id="modal-title">Add a supplement</h2>
+    <form id="supp-form">
+      <div class="field">
+        <label for="f-name">Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Vitamin D3" required>
+      </div>
+      <div class="field">
+        <label for="f-dosage">Dosage</label>
+        <input type="text" id="f-dosage" placeholder="e.g. 2000 IU">
+      </div>
+      <div class="field">
+        <label for="f-time">Time of day</label>
+        <select id="f-time">
+          <option value="Morning">Morning</option>
+          <option value="Afternoon">Afternoon</option>
+          <option value="Evening">Evening</option>
+          <option value="Anytime">Anytime</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn danger" id="delete-btn" style="display:none;">Delete</button>
+        <button type="button" class="btn" id="cancel-btn">Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STORE_KEY = 'daily-dose-tracker-v1';
+  const TIME_ORDER = ['Morning','Afternoon','Evening','Anytime'];
+
+  function todayStr(d){
+    d = d || new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return { supplements: [], logs: {} };
+      const parsed = JSON.parse(raw);
+      return { supplements: parsed.supplements || [], logs: parsed.logs || {} };
+    }catch(e){
+      console.error('Failed to load data', e);
+      return { supplements: [], logs: {} };
+    }
+  }
+
+  function saveData(){
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    }catch(e){
+      console.error('Failed to save data', e);
+      alert('Could not save — your browser storage may be full or disabled.');
+    }
+  }
+
+  let data = loadData();
+  let editingId = null;
+
+  function uid(){ return 's_' + Math.random().toString(36).slice(2,10); }
+
+  // ---------- Rendering ----------
+  function renderDate(){
+    const el = document.getElementById('today-date');
+    const now = new Date();
+    el.textContent = now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  }
+
+  function currentStreak(){
+    // Count consecutive days (ending today) where at least one dose was logged
+    // and all supplements that existed at that time... simplified: day counts if
+    // every supplement present that day was checked off (and there was >=1 supplement).
+    let streak = 0;
+    let cursor = new Date();
+    while(true){
+      const key = todayStr(cursor);
+      const log = data.logs[key];
+      const suppCount = data.supplements.length;
+      if(suppCount === 0) break;
+      if(!log) break;
+      const takenCount = Object.values(log).filter(Boolean).length;
+      if(takenCount < suppCount) break;
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function renderStreak(){
+    const s = currentStreak();
+    document.getElementById('streak-text').textContent = s + (s === 1 ? ' day streak' : ' day streak');
+  }
+
+  function renderGauge(){
+    const key = todayStr();
+    const log = data.logs[key] || {};
+    const total = data.supplements.length;
+    const taken = data.supplements.filter(s => log[s.id]).length;
+    const pct = total === 0 ? 0 : Math.round((taken/total)*100);
+    document.getElementById('gauge-fill').style.width = pct + '%';
+    document.getElementById('gauge-count').textContent = taken + ' of ' + total + ' taken';
+    document.getElementById('gauge-pct').textContent = pct + '%';
+  }
+
+  function renderTodayList(){
+    const container = document.getElementById('today-list');
+    container.innerHTML = '';
+    if(data.supplements.length === 0){
+      container.innerHTML = '<div class="empty-state">Your shelf is empty. Add your first supplement below.</div>';
+      return;
+    }
+    const key = todayStr();
+    const log = data.logs[key] || {};
+
+    const groups = {};
+    TIME_ORDER.forEach(t => groups[t] = []);
+    data.supplements.forEach(s => {
+      const t = TIME_ORDER.includes(s.time) ? s.time : 'Anytime';
+      groups[t].push(s);
+    });
+
+    TIME_ORDER.forEach(timeLabel => {
+      const items = groups[timeLabel];
+      if(items.length === 0) return;
+      const groupEl = document.createElement('div');
+      groupEl.className = 'time-group';
+      const label = document.createElement('div');
+      label.className = 'time-group-label';
+      label.textContent = timeLabel;
+      groupEl.appendChild(label);
+
+      items.forEach(s => {
+        const taken = !!log[s.id];
+        const card = document.createElement('div');
+        card.className = 'supp-card' + (taken ? ' taken' : '');
+
+        const toggle = document.createElement('div');
+        toggle.className = 'capsule-toggle';
+        toggle.innerHTML = '<div class="capsule"></div>';
+        toggle.addEventListener('click', () => toggleTaken(s.id));
+
+        const info = document.createElement('div');
+        info.className = 'supp-info';
+        const name = document.createElement('div');
+        name.className = 'supp-name';
+        name.textContent = s.name;
+        const meta = document.createElement('div');
+        meta.className = 'supp-meta';
+        meta.textContent = [s.dosage, s.time].filter(Boolean).join(' · ');
+        info.appendChild(name);
+        info.appendChild(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'supp-actions';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'icon-btn';
+        editBtn.textContent = '✎';
+        editBtn.title = 'Edit';
+        editBtn.addEventListener('click', () => openEdit(s.id));
+        actions.appendChild(editBtn);
+
+        card.appendChild(toggle);
+        card.appendChild(info);
+        card.appendChild(actions);
+        groupEl.appendChild(card);
+      });
+
+      container.appendChild(groupEl);
+    });
+  }
+
+  function renderHeatmap(){
+    const el = document.getElementById('heatmap');
+    el.innerHTML = '';
+    const total = data.supplements.length;
+    const todayKey = todayStr();
+    for(let i = 13; i >= 0; i--){
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = todayStr(d);
+      const log = data.logs[key] || {};
+      const taken = Object.values(log).filter(Boolean).length;
+      let level = 0;
+      if(total > 0 && taken > 0){
+        const ratio = taken / total;
+        if(ratio >= 1) level = 4;
+        else if(ratio >= 0.66) level = 3;
+        else if(ratio >= 0.33) level = 2;
+        else level = 1;
+      }
+      const cell = document.createElement('div');
+      cell.className = 'heat-cell' + (key === todayKey ? ' today' : '');
+      cell.setAttribute('data-level', level);
+      cell.title = d.toLocaleDateString(undefined, {month:'short', day:'numeric'}) + ': ' + taken + '/' + total + ' taken';
+      el.appendChild(cell);
+    }
+  }
+
+  function renderAll(){
+    renderDate();
+    renderTodayList();
+    renderGauge();
+    renderStreak();
+    renderHeatmap();
+  }
+
+  // ---------- Actions ----------
+  function toggleTaken(id){
+    const key = todayStr();
+    if(!data.logs[key]) data.logs[key] = {};
+    data.logs[key][id] = !data.logs[key][id];
+    saveData();
+    renderAll();
+  }
+
+  function openAdd(){
+    editingId = null;
+    document.getElementById('modal-title').textContent = 'Add a supplement';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-dosage').value = '';
+    document.getElementById('f-time').value = 'Morning';
+    document.getElementById('delete-btn').style.display = 'none';
+    document.getElementById('modal-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('f-name').focus(), 50);
+  }
+
+  function openEdit(id){
+    const s = data.supplements.find(x => x.id === id);
+    if(!s) return;
+    editingId = id;
+    document.getElementById('modal-title').textContent = 'Edit supplement';
+    document.getElementById('f-name').value = s.name;
+    document.getElementById('f-dosage').value = s.dosage || '';
+    document.getElementById('f-time').value = s.time || 'Morning';
+    document.getElementById('delete-btn').style.display = 'block';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+    editingId = null;
+  }
+
+  function handleSubmit(e){
+    e.preventDefault();
+    const name = document.getElementById('f-name').value.trim();
+    const dosage = document.getElementById('f-dosage').value.trim();
+    const time = document.getElementById('f-time').value;
+    if(!name) return;
+
+    if(editingId){
+      const s = data.supplements.find(x => x.id === editingId);
+      if(s){ s.name = name; s.dosage = dosage; s.time = time; }
+    } else {
+      data.supplements.push({ id: uid(), name, dosage, time });
+    }
+    saveData();
+    closeModal();
+    renderAll();
+  }
+
+  function handleDelete(){
+    if(!editingId) return;
+    if(!confirm('Remove this supplement from your shelf? Past log history will be kept.')) return;
+    data.supplements = data.supplements.filter(x => x.id !== editingId);
+    saveData();
+    closeModal();
+    renderAll();
+  }
+
+  // ---------- Wire up ----------
+  document.getElementById('open-add').addEventListener('click', openAdd);
+  document.getElementById('cancel-btn').addEventListener('click', closeModal);
+  document.getElementById('supp-form').addEventListener('submit', handleSubmit);
+  document.getElementById('delete-btn').addEventListener('click', handleDelete);
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if(e.target.id === 'modal-overlay') closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeModal();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
